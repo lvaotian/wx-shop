@@ -1,3 +1,3 @@
 <template>
-  <view class="index">index</view>
+  <view class="index">首页</view>
 </template>
