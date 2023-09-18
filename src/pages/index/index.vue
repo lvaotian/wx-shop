@@ -1,3 +1,11 @@
+<script setup lang="ts">
+//
+</script>
+
 <template>
-  <view class="index">首页</view>
+  <view class="index">index</view>
 </template>
+
+<style lang="scss">
+//
+</style>

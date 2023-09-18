@@ -1,4 +1,5 @@
 {
+    // 组件自动导入
   "easycom": {
     "autoscan": true,
     "custom": {
@@ -30,6 +31,12 @@
       "path": "pages/category/category",
       "style": {
         "navigationBarTitleText": "分类"
+      }
+    },
+    {
+      "path": "pages/login/login",
+      "style": {
+        "navigationBarTitleText": "登录"
       }
     }
   ],

@@ -15,6 +15,13 @@ module.exports = {
     wx: true,
     WechatMiniprogram: true,
     getCurrentPages: true,
+    getApp: true,
+    UniApp: true,
+    UniHelper: true,
+    App: true,
+    Page: true,
+    Component: true,
+    AnyObject: true,
   },
   parserOptions: {
     ecmaVersion: 'latest',
@@ -25,7 +32,7 @@ module.exports = {
       {
         singleQuote: true,
         semi: false,
-        printWidth: 80,
+        printWidth: 100,
         trailingComma: 'all',
         endOfLine: 'auto',
       },
