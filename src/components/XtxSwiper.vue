@@ -13,7 +13,6 @@ const onChange: UniHelper.SwiperOnChange = (ev) => {
 const posp = defineProps<{
   list: BannerItem[]
 }>()
-console.log(posp)
 </script>
 
 <template>

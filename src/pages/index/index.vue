@@ -34,21 +34,31 @@ onLoad(() => {
 </script>
 
 <template>
-  <view class="index">
-    <!-- 自定义导航栏 -->
-    <CustomNavbar />
+  <!-- 自定义导航栏 -->
+  <CustomNavbar />
+  <!-- 滚动容器 -->
+  <scroll-view class="scroll-view" scroll-y>
     <!-- 自定义轮播图 -->
     <XtxSwiper :list="bannerList" />
     <!-- 分类面板 -->
     <CategoryPanel :list="categoryList" />
     <!-- 热门推荐 -->
     <HotPanel :list="hotList" />
-  </view>
+    <!-- 猜你喜欢 -->
+    <XtxGuess />
+  </scroll-view>
 </template>
 
 <style lang="scss">
 //
 page {
   background-color: #f7f7f7;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.scroll-view {
+  flex: 1;
 }
 </style>
