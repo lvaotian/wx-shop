@@ -6,6 +6,7 @@ import CustomNavbar from './components/CustomNavbar.vue'
   <view class="index">
     <!-- 自定义导航栏 -->
     <CustomNavbar />
+    <XtxSwiper />
   </view>
 </template>
 
