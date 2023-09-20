@@ -34,6 +34,23 @@ const getHotRecommendData = async () => {
 onLoad(() => {
   getHotRecommendData()
 })
+// 滚动触底
+const onScrolltolower = async () => {
+  // 获取当前选项
+  const currsubTypes = subTypes.value[activeIndex.value]
+  currsubTypes.goodsItems.page++
+
+  // 调用API传参
+  const res = await getHotRecommendAPI(currUrlMap!.url, {
+    subType: currsubTypes.id,
+    page: currsubTypes.goodsItems.page,
+    pageSize: currsubTypes.goodsItems.pageSize,
+  })
+  // 新的列表选项
+  const newsubTypes = res.result.subTypes[activeIndex.value]
+  // 数组追加
+  currsubTypes.goodsItems.items.push(...newsubTypes.goodsItems.items)
+}
 </script>
 
 <template>
@@ -55,11 +72,13 @@ onLoad(() => {
     </view>
     <!-- 推荐列表 -->
     <scroll-view
+      enable-back-to-top
       v-for="(item, index) in subTypes"
       :key="item.id"
       v-show="activeIndex === index"
       scroll-y
       class="scroll-view"
+      @scrolltolower="onScrolltolower"
     >
       <view class="goods">
         <navigator
