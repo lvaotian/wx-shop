@@ -47,6 +47,9 @@ dependencies:
   '@dcloudio/uni-quickapp-webview':
     specifier: 3.0.0-alpha-3081220230802001
     version: 3.0.0-alpha-3081220230802001(postcss@8.4.28)(vue@3.3.4)
+  '@dcloudio/uni-ui':
+    specifier: ^1.4.28
+    version: registry.npmmirror.com/@dcloudio/uni-ui@1.4.28
   pinia:
     specifier: 2.0.27
     version: 2.0.27(typescript@5.1.6)(vue@3.3.4)
@@ -6277,6 +6280,12 @@ packages:
     name: '@bcoe/v8-coverage'
     version: 0.2.3
     dev: true
+
+  registry.npmmirror.com/@dcloudio/uni-ui@1.4.28:
+    resolution: {integrity: sha512-e/lSbvR79KH9+d3D4ueNbvD6szigjO/5IyjBNmiTqaj0PTS324fBV3L6f3s1qpkYonM4rdOl000hVOcAg6Gh/A==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@dcloudio/uni-ui/-/uni-ui-1.4.28.tgz}
+    name: '@dcloudio/uni-ui'
+    version: 1.4.28
+    dev: false
 
   registry.npmmirror.com/@esbuild/android-arm64@0.17.18:
     resolution: {integrity: sha512-/iq0aK0eeHgSC3z55ucMAHO05OIqmQehiGay8eP5l/5l+iEr4EIbh4/MI8xD9qRFjqzgkc0JkX0LculNC9mXBw==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@esbuild/android-arm64/-/android-arm64-0.17.18.tgz}
