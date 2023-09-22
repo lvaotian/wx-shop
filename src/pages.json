@@ -22,6 +22,8 @@
 		{
 			"path": "pages/my/my",
 			"style": {
+				"navigationStyle": "custom", // 隐藏默认导航
+				"navigationBarTextStyle": "white",
 				"navigationBarTitleText": "我的"
 			}
 		},
