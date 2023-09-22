@@ -6,7 +6,7 @@ import { onMounted, ref } from 'vue'
 
 // 分页参数
 const pageParams: Required<PageParams> = {
-  page: 1,
+  page: import.meta.env.DEV ? 33 : 1,
   pageSize: 10,
 }
 // 猜你喜欢的列表

@@ -8,6 +8,7 @@ import { ref } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import type { XtxGuessInstance } from '@/types/components'
 import PageSkeleton from './components/PageSkeleton.vue'
+import { useGuessList } from '@/composables'
 // 获取轮播图数据
 const bannerList = ref<BannerItem[]>([])
 const getHomeBannerData = async () => {
@@ -58,13 +59,15 @@ const onRefresherrefresh = async () => {
   // 关闭动画
   isTriggered.value = false
 }
-// 获取猜你喜欢组件实例
-const guessRef = ref<XtxGuessInstance>()
+// // 获取猜你喜欢组件实例
+// const guessRef = ref<XtxGuessInstance>()
 
-// 滚动触底事件
-const onScrolltolower = () => {
-  guessRef.value?.getMore()
-}
+// // 滚动触底事件
+// const onScrolltolower = () => {
+//   guessRef.value?.getMore()
+// }
+// 猜你喜欢组合式函数
+const { guessRef, onScrolltolower } = useGuessList()
 </script>
 
 <template>
