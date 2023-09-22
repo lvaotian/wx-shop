@@ -63,9 +63,11 @@ const onBirthdayChange: UniHelper.DatePickerOnChange = (ev) => {
 }
 // 点击保存提交表单
 const onSubmit = async () => {
+  const { nickname, gender, birthday } = profile.value
   const res = await putMemberProfileAPI({
-    nickname: profile.value.nickname,
-    gender: profile.value.gender,
+    nickname,
+    gender,
+    birthday,
   })
   // 更新Store昵称
   memberStore.profile!.nickname = res.result.nickname
@@ -118,6 +120,7 @@ const onSubmit = async () => {
         <view class="form-item">
           <text class="label">出生日期</text>
           <picker
+            @change="onBirthdayChange"
             class="picker"
             mode="date"
             :value="profile?.birthday"
