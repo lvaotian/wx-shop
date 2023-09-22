@@ -58,7 +58,12 @@ const onSubmit = async () => {
   const res = await putMemberProfileAPI({
     nickname: profile.value.nickname,
   })
+  // 更新Store昵称
+  memberStore.profile!.nickname = res.result.nickname
   uni.showToast({ icon: 'success', title: '保存成功' })
+  setTimeout(() => {
+    uni.navigateBack()
+  }, 400)
 }
 </script>
 
