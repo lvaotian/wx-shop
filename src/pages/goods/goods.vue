@@ -1,56 +1,24 @@
 <script setup lang="ts">
-import { getGoodsByIdAPI } from '@/services/goods'
-import type { GoodsResult } from '@/types/goods'
-import { onLoad } from '@dcloudio/uni-app'
-import { ref } from 'vue'
-import AddressPanel from './components/AddressPanel.vue'
-import ServicePanel from './components/ServicePanel.vue'
 import type {
   SkuPopupEvent,
   SkuPopupInstance,
   SkuPopupLocaldata,
 } from '@/components/vk-data-goods-sku-popup/vk-data-goods-sku-popup'
-import { computed } from 'vue'
 import { postMemberCartAPI } from '@/services/cart'
+import { getGoodsByIdAPI } from '@/services/goods'
+import type { GoodsResult } from '@/types/goods'
+import { onLoad } from '@dcloudio/uni-app'
+import { computed, ref } from 'vue'
+import AddressPanel from './components/AddressPanel.vue'
+import ServicePanel from './components/ServicePanel.vue'
 
 // 获取屏幕边界到安全区域距离
 const { safeAreaInsets } = uni.getSystemInfoSync()
+
 // 接收页面参数
 const query = defineProps<{
   id: string
 }>()
-
-// 页面加载
-onLoad(() => {
-  getGoodsByIdData()
-})
-// 轮播图变化时
-const currentIndex = ref(0)
-const onChange: UniHelper.SwiperOnChange = (ev) => {
-  currentIndex.value = ev.detail.current
-}
-// 点击图片时
-const onTapImage = (url: string) => {
-  // 大图预览
-  uni.previewImage({
-    current: url,
-    urls: goods.value!.mainPictures,
-  })
-}
-// uni-ui 弹出层组件 ref
-const popup = ref<{
-  open: (type?: UniHelper.UniPopupType) => void
-  close: () => void
-}>()
-
-// 弹出层条件渲染
-const popupName = ref<'address' | 'service'>()
-const openPopup = (name: typeof popupName.value) => {
-  // 修改弹出层名称
-  popupName.value = name
-  // 打开弹出层
-  popup.value?.open()
-}
 
 // 获取商品详情信息
 const goods = ref<GoodsResult>()
@@ -62,19 +30,59 @@ const getGoodsByIdData = async () => {
     _id: res.result.id,
     name: res.result.name,
     goods_thumb: res.result.mainPictures[0],
-    spec_list: res.result.specs.map((v) => ({ name: v.name, list: v.values })),
-    sku_list: res.result.skus.map((v) => ({
-      _id: v.id,
-      goods_id: res.result.id,
-      goods_name: res.result.name,
-      image: v.picture,
-      price: v.price * 100, // 注意：需要乘以 100
-      stock: v.inventory,
-      sku_name_arr: v.specs.map((vv) => vv.valueName),
-    })),
+    spec_list: res.result.specs.map((v) => {
+      return {
+        name: v.name,
+        list: v.values,
+      }
+    }),
+    sku_list: res.result.skus.map((v) => {
+      return {
+        _id: v.id,
+        goods_id: res.result.id,
+        goods_name: res.result.name,
+        image: v.picture,
+        price: v.price * 100, // 注意：需要乘以 100
+        stock: v.inventory,
+        sku_name_arr: v.specs.map((vv) => vv.valueName),
+      }
+    }),
   }
 }
 
+// 页面加载
+onLoad(() => {
+  getGoodsByIdData()
+})
+
+// 轮播图变化时
+const currentIndex = ref(0)
+const onChange: UniHelper.SwiperOnChange = (ev) => {
+  currentIndex.value = ev.detail.current
+}
+
+// 点击图片时
+const onTapImage = (url: string) => {
+  // 大图预览
+  uni.previewImage({
+    current: url,
+    urls: goods.value!.mainPictures,
+  })
+}
+
+// uni-ui 弹出层组件 ref
+const popup = ref<{
+  open: (type?: UniHelper.UniPopupType) => void
+  close: () => void
+}>()
+
+// 弹出层条件渲染
+const popupName = ref<'address' | 'service'>()
+const openPopup = (name: typeof popupName.value) => {
+  // 修改弹出层名称
+  popupName.value = name
+  popup.value?.open()
+}
 // 是否显示SKU组件
 const isShowSku = ref(false)
 // 商品信息
@@ -105,7 +113,7 @@ const onAddCart = async (ev: SkuPopupEvent) => {
   uni.showToast({ title: '添加成功' })
   isShowSku.value = false
 }
-// 立即购买事件
+// 立即购买
 const onBuyNow = (ev: SkuPopupEvent) => {
   uni.navigateTo({ url: `/pagesOrder/create/create?skuId=${ev._id}&count=${ev.buy_num}` })
 }
@@ -128,7 +136,7 @@ const onBuyNow = (ev: SkuPopupEvent) => {
     @add-cart="onAddCart"
     @buy-now="onBuyNow"
   />
-  <scroll-view scroll-y class="viewport">
+  <scroll-view enable-back-to-top scroll-y class="viewport">
     <!-- 基本信息 -->
     <view class="goods">
       <!-- 商品主图 -->
@@ -144,6 +152,7 @@ const onBuyNow = (ev: SkuPopupEvent) => {
           <text class="total">{{ goods?.mainPictures.length }}</text>
         </view>
       </view>
+
       <!-- 商品简介 -->
       <view class="meta">
         <view class="price">
@@ -156,10 +165,9 @@ const onBuyNow = (ev: SkuPopupEvent) => {
 
       <!-- 操作面板 -->
       <view class="action">
-        <view class="item arrow">
+        <view @tap="openSkuPopup(SkuMode.Both)" class="item arrow">
           <text class="label">选择</text>
-          <!-- 显示两个按钮 -->
-          <view @tap="openSkuPopup(SkuMode.Both)" class="item arrow">{{ selectArrText }}</view>
+          <text class="text ellipsis"> {{ selectArrText }} </text>
         </view>
         <view @tap="openPopup('address')" class="item arrow">
           <text class="label">送至</text>
@@ -221,22 +229,24 @@ const onBuyNow = (ev: SkuPopupEvent) => {
   </scroll-view>
 
   <!-- 用户操作 -->
-  <view class="toolbar" :style="{ paddingBottom: safeAreaInsets?.bottom + 'px' }">
+  <view v-if="goods" class="toolbar" :style="{ paddingBottom: safeAreaInsets?.bottom + 'px' }">
     <view class="icons">
       <button class="icons-button"><text class="icon-heart"></text>收藏</button>
+      <!-- #ifdef MP-WEIXIN -->
       <button class="icons-button" open-type="contact">
         <text class="icon-handset"></text>客服
       </button>
+      <!-- #endif -->
       <navigator class="icons-button" url="/pages/cart/cart2" open-type="navigate">
         <text class="icon-cart"></text>购物车
       </navigator>
     </view>
     <view class="buttons">
-      <!-- 显示一个按钮 -->
       <view @tap="openSkuPopup(SkuMode.Cart)" class="addcart"> 加入购物车 </view>
       <view @tap="openSkuPopup(SkuMode.Buy)" class="payment"> 立即购买 </view>
     </view>
   </view>
+
   <!-- uni-ui 弹出层 -->
   <uni-popup ref="popup" type="bottom" background-color="#fff">
     <AddressPanel v-if="popupName === 'address'" @close="popup?.close()" />
@@ -422,7 +432,7 @@ page {
 /* 同类推荐 */
 .similar {
   .content {
-    padding: 0 20rpx 200rpx;
+    padding: 0 20rpx 20rpx;
     background-color: #f4f4f4;
     display: flex;
     flex-wrap: wrap;
@@ -465,11 +475,11 @@ page {
   position: fixed;
   left: 0;
   right: 0;
-  bottom: 0;
+  bottom: calc((var(--window-bottom)));
   z-index: 1;
   background-color: #fff;
   height: 100rpx;
-  padding: 0 20rpx var(--window-bottom);
+  padding: 0 20rpx;
   border-top: 1rpx solid #eaeaea;
   display: flex;
   justify-content: space-between;
@@ -488,17 +498,18 @@ page {
     .addcart {
       background-color: #ffa868;
     }
-    .buynow,
     .payment {
       background-color: #27ba9b;
       margin-left: 20rpx;
     }
   }
   .icons {
-    padding-right: 10rpx;
+    padding-right: 20rpx;
     display: flex;
     align-items: center;
     flex: 1;
+    // 兼容 H5 端和 App 端的导航链接样式
+    .navigator-wrap,
     .icons-button {
       flex: 1;
       text-align: center;

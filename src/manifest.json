@@ -48,9 +48,17 @@
   },
   /* 快应用特有相关 */
   "quickapp": {},
+  /* 网页端特有配置 */
+  "h5" : {
+    "router" : {
+        // 路由基础路径。默认为 /
+        "base" : "./"
+    }
+  },
   /* 小程序特有相关 */
   "mp-weixin": {
     "appid": "wx5dfa63b533ee8339",
+    "lazyCodeLoading": "requiredComponents",
     "setting": {
       "urlCheck": false
     },

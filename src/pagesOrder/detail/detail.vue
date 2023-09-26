@@ -1,17 +1,18 @@
 <script setup lang="ts">
 import { useGuessList } from '@/composables'
+import { OrderState, orderStateList } from '@/services/constants'
 import {
   deleteMemberOrderAPI,
   getMemberOrderByIdAPI,
   getMemberOrderCancelByIdAPI,
-  getMemberOrderConsignmentByIdAPI,
   getMemberOrderLogisticsByIdAPI,
+  getMemberOrderConsignmentByIdAPI,
   putMemberOrderReceiptByIdAPI,
 } from '@/services/order'
 import type { LogisticItem, OrderResult } from '@/types/order'
 import { onLoad, onReady } from '@dcloudio/uni-app'
 import { ref } from 'vue'
-import { OrderState, orderStateList } from '@/services/constants'
+import PageSkeleton from './components/PageSkeleton.vue'
 import { getPayMockAPI, getPayWxPayMiniPayAPI } from '@/services/pay'
 
 // 获取屏幕边界到安全区域距离
@@ -43,24 +44,26 @@ const query = defineProps<{
 
 // 获取页面栈
 const pages = getCurrentPages()
-// 获取当前页面实例，数组最后一项
-// const pageInstance = pages.at(-1) as any
-// 基于小程序的 Page 实例类型扩展 uni-app 的 Page
+
+// 基于小程序的 Page 类型扩展 uni-app 的 Page
 type PageInstance = Page.PageInstance & WechatMiniprogram.Page.InstanceMethods<any>
+
+// #ifdef MP-WEIXIN
+// 获取当前页面实例，数组最后一项
 const pageInstance = pages.at(-1) as PageInstance
 
 // 页面渲染完毕，绑定动画效果
 onReady(() => {
   // 动画效果,导航栏背景色
   pageInstance.animate(
-    '.navbar', // 选择器
-    [{ backgroundColor: 'transparent' }, { backgroundColor: '#f8f8f8' }], // 关键帧信息
-    1000, // 动画持续时长
+    '.navbar',
+    [{ backgroundColor: 'transparent' }, { backgroundColor: '#f8f8f8' }],
+    1000,
     {
-      scrollSource: '#scroller', // scroll-view 的选择器
-      startScrollOffset: 0, // 开始滚动偏移量
-      endScrollOffset: 50, // 停止滚动偏移量
-      timeRange: 1000, // 时间长度
+      scrollSource: '#scroller',
+      timeRange: 1000,
+      startScrollOffset: 0,
+      endScrollOffset: 50,
     },
   )
   // 动画效果,导航栏标题
@@ -78,6 +81,7 @@ onReady(() => {
     endScrollOffset: 50,
   })
 })
+// #endif
 
 // 获取订单详情
 const order = ref<OrderResult>()
@@ -112,14 +116,20 @@ const onTimeup = () => {
 
 // 订单支付
 const onOrderPay = async () => {
-  // 通过环境变量区分开发环境
   if (import.meta.env.DEV) {
-    // 开发环境：模拟支付，修改订单状态为已支付
+    // 开发环境模拟支付
     await getPayMockAPI({ orderId: query.id })
   } else {
-    // 生产环境：获取支付参数 + 发起微信支付
+    // #ifdef MP-WEIXIN
+    // 正式环境微信支付
     const res = await getPayWxPayMiniPayAPI({ orderId: query.id })
     await wx.requestPayment(res.result)
+    // #endif
+
+    // #ifdef H5 || APP-PLUS
+    // H5端 和 App 端未开通支付-模拟支付体验
+    await getPayMockAPI({ orderId: query.id })
+    // #endif
   }
   // 关闭当前页，再跳转支付结果页
   uni.redirectTo({ url: `/pagesOrder/payment/payment?id=${query.id}` })
@@ -136,12 +146,12 @@ const onOrderSend = async () => {
     order.value!.orderState = OrderState.DaiShouHuo
   }
 }
-
 // 确认收货
 const onOrderConfirm = () => {
   // 二次确认弹窗
   uni.showModal({
     content: '为保障您的权益，请收到货并确认无误后，再确认收货',
+    confirmColor: '#27BA9B',
     success: async (success) => {
       if (success.confirm) {
         const res = await putMemberOrderReceiptByIdAPI(query.id)
@@ -151,7 +161,6 @@ const onOrderConfirm = () => {
     },
   })
 }
-
 // 删除订单
 const onOrderDelete = () => {
   // 二次确认
@@ -194,17 +203,22 @@ const onOrderCancel = async () => {
       <view class="title">订单详情</view>
     </view>
   </view>
-  <scroll-view scroll-y class="viewport" id="scroller" @scrolltolower="onScrolltolower">
+  <scroll-view
+    enable-back-to-top
+    scroll-y
+    class="viewport"
+    id="scroller"
+    @scrolltolower="onScrolltolower"
+  >
     <template v-if="order">
       <!-- 订单状态 -->
       <view class="overview" :style="{ paddingTop: safeAreaInsets!.top + 20 + 'px' }">
-        <!-- 待付款状态:展示去支付按钮和倒计时 -->
+        <!-- 待付款状态:展示倒计时 -->
         <template v-if="order.orderState === OrderState.DaiFuKuan">
           <view class="status icon-clock">等待付款</view>
           <view class="tips">
             <text class="money">应付金额: ¥ {{ order.payMoney }}</text>
             <text class="time">支付剩余</text>
-            <!-- 倒计时组件 -->
             <uni-countdown
               :second="order.countdown"
               color="#fff"
@@ -239,8 +253,8 @@ const onOrderCancel = async () => {
             <!-- 待收货状态: 展示确认收货按钮 -->
             <view
               v-if="order.orderState === OrderState.DaiShouHuo"
-              class="button"
               @tap="onOrderConfirm"
+              class="button"
             >
               确认收货
             </view>
@@ -327,8 +341,8 @@ const onOrderCancel = async () => {
       <view class="toolbar-height" :style="{ paddingBottom: safeAreaInsets?.bottom + 'px' }"></view>
       <view class="toolbar" :style="{ paddingBottom: safeAreaInsets?.bottom + 'px' }">
         <!-- 待付款状态:展示支付按钮 -->
-        <template v-if="true">
-          <view class="button primary"> 去支付 </view>
+        <template v-if="order.orderState === OrderState.DaiFuKuan">
+          <view class="button primary" @tap="onOrderPay"> 去支付 </view>
           <view class="button" @tap="popup?.open?.()"> 取消订单 </view>
         </template>
         <!-- 其他订单状态:按需展示按钮 -->
@@ -341,11 +355,23 @@ const onOrderCancel = async () => {
             再次购买
           </navigator>
           <!-- 待收货状态: 展示确认收货 -->
-          <view class="button primary"> 确认收货 </view>
+          <view
+            class="button primary"
+            v-if="order.orderState === OrderState.DaiShouHuo"
+            @tap="onOrderConfirm"
+          >
+            确认收货
+          </view>
           <!-- 待评价状态: 展示去评价 -->
-          <view class="button"> 去评价 </view>
+          <view class="button" v-if="order.orderState === OrderState.DaiPingJia"> 去评价 </view>
           <!-- 待评价/已完成/已取消 状态: 展示删除订单 -->
-          <view class="button delete"> 删除订单 </view>
+          <view
+            class="button delete"
+            v-if="order.orderState >= OrderState.DaiPingJia"
+            @tap="onOrderDelete"
+          >
+            删除订单
+          </view>
         </template>
       </view>
     </template>
@@ -367,7 +393,7 @@ const onOrderCancel = async () => {
       </view>
       <view class="footer">
         <view class="button" @tap="popup?.close?.()">取消</view>
-        <view class="button primary">确认</view>
+        <view class="button primary" @tap="onOrderCancel">确认</view>
       </view>
     </view>
   </uni-popup>
